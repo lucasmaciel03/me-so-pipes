@@ -28,14 +28,14 @@ sudo apt update && sudo apt upgrade -y
 sudo apt install -y build-essential make gcc gdb valgrind git vim
 ```
 
-| Ferramenta | Função                  |
-|------------|-------------------------|
-| gcc       | Compilador C           |
-| make      | Sistema de compilação  |
-| gdb       | Depurador              |
-| valgrind  | Detetor de fugas de memória |
-| git       | Controlo de versões    |
-| vim       | Editor de texto        |
+| Ferramenta | Função                      |
+| ---------- | --------------------------- |
+| gcc        | Compilador C                |
+| make       | Sistema de compilação       |
+| gdb        | Depurador                   |
+| valgrind   | Detetor de fugas de memória |
+| git        | Controlo de versões         |
+| vim        | Editor de texto             |
 
 ### 3️⃣ Clonar o Projeto
 
@@ -92,10 +92,10 @@ clean:
     rm -rf build/* logs/* /tmp/exec_fifo /tmp/log_fifo_*
 ```
 
-| Ação                  | Comando          |
-|-----------------------|------------------|
-| Compilar o projeto   | `make`          |
-| Limpar ficheiros gerados | `make clean`   |
+| Ação                     | Comando      |
+| ------------------------ | ------------ |
+| Compilar o projeto       | `make`       |
+| Limpar ficheiros gerados | `make clean` |
 
 ## 💻 Código
 
@@ -306,11 +306,13 @@ O projeto inclui duas versões do servidor:
 ### 🔹 Versão de Mensagens (Servidor Inicial)
 
 1. Compilar os executáveis:
+
    ```bash
    make
    ```
 
 2. Iniciar o servidor (num terminal):
+
    ```bash
    ./build/server
    ```
