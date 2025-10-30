@@ -8,10 +8,30 @@
 #include <sys/wait.h>
 
 #define FIFO_PATH "/tmp/exec_fifo"
+#define LOG_FILE "logs/server.log"
+
+void append_log(const char *line) {
+    int log_fd = open(LOG_FILE, O_WRONLY | O_CREAT | O_APPEND, 0644);
+    if (log_fd == -1) {
+        perror("[SERVER] Erro ao abrir o ficheiro de log    ");
+        return;
+    }
+
+    // Escreve a linha no ficheiro
+    ssize_t written = write(log_fd, line, strlen(line));
+    if (written == -1) {
+        perror("[SERVER] Erro ao escrever no ficheiro de log");
+    }
+
+    close(log_fd);
+}
 
 int main(void) {
     int fd;
     char buffer[256];
+
+    // Garante que a pasta de logs existe
+    mkdir("logs", 0755);
 
     // Cria o FIFO se não existir
     if (mkfifo(FIFO_PATH, 0666) == -1) {
@@ -38,7 +58,7 @@ int main(void) {
 
             printf("[Servidor] Comando recebido: '%s'\n", buffer);
 
-            // Quebrar a string em tokens (programa + argumentos)
+            // Divide a string em tokens (programa + argumentos)
             char *args[32];
             int i = 0;
             char *token = strtok(buffer, " ");
@@ -71,11 +91,27 @@ int main(void) {
                 int status;
                 waitpid(pid, &status, 0);
 
+                char log_entry[512];
                 if (WIFEXITED(status)) {
                     int exit_code = WEXITSTATUS(status);
-                    printf("[Servidor] Comando '%s' terminou com código %d\n", args[0], exit_code);
+                    snprintf(log_entry, sizeof(log_entry), "%s", args[0]);
+                    for (int j=1; args[j] != NULL; j++) {
+                        strncat(log_entry, " ", sizeof(log_entry) - strlen(log_entry) -1);
+                        strncat(log_entry, args[j], sizeof(log_entry) - strlen(log_entry) -1);
+                    }
+                    strncat(log_entry, "; exit status: ", sizeof(log_entry) - strlen(log_entry) -1);
+
+                    char code[10];
+                    snprintf(code, sizeof(code), "%d\n", exit_code);
+                    strncat(log_entry, code, sizeof(log_entry) - strlen(log_entry) -1);
+
+
+                    printf("[Servidor] %s", log_entry);
+                    append_log(log_entry);
                 } else {
-                    printf("[Servidor] O processo terminou de forma anormal.\n");
+                    snprintf(log_entry, sizeof(log_entry), "%s; terminou de forma anormal\n", args[0]);
+                    printf("[Servidor] %s", log_entry);
+                    append_log(log_entry);
                 }
             }
 

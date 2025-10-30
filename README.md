@@ -341,3 +341,15 @@ O servidor receberá e mostrará a mensagem enviada pelo cliente.
    ```
 
 O servidor receberá, executará o comando e mostrará a saída e o código de saída.
+
+## Logs
+
+O servidor regista os comandos executados e os respetivos códigos de saída num ficheiro de log localizado em `logs/server.log`. Cada entrada inclui o comando completo e o resultado da execução.
+
+Para visualizar os logs:
+
+```bash
+cat logs/server.log
+```
+
+Os logs são anexados ao ficheiro, permitindo acompanhar o histórico de execuções.
