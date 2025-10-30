@@ -1,4 +1,4 @@
-# me-so-pipes
+# Projeto SO
 
 ## 📝 Descrição
 
