@@ -33,8 +33,8 @@ Ferramentas instaladas:
 - `gcc`: Compilador C
 - `make`: Sistema de build
 - `gdb`: Debugger
-- `valgrind`: Detector de vazamentos de memória
-- `git`: Controle de versões
+- `valgrind`: Detector de fugas de memória
+- `git`: Controlo de versões
 - `vim`: Editor de texto
 
 ### 3. Clonar o Projeto
@@ -103,3 +103,125 @@ Para limpar os arquivos gerados:
 ```bash
 make clean
 ```
+
+## Código
+
+### Código do Servidor
+
+O servidor cria um FIFO nomeado (`/tmp/exec_fifo`) e aguarda mensagens dos clientes. Ele lê as mensagens e as imprime no console.
+
+```c
+#include <stdio.h>
+#include <stdlib.h>
+#include <unistd.h>
+#include <fcntl.h>
+#include <sys/stat.h>
+#include <string.h>
+#include <errno.h>
+
+#define FIFO_PATH "/tmp/exec_fifo"
+
+int main(void) {
+    int fd;
+    char buffer[256];
+
+    // Cria o FIFO se não existir
+    if (mkfifo(FIFO_PATH, 0666) == -1) {
+        if (errno != EEXIST) {
+            perror("mkfifo");
+            exit(EXIT_FAILURE);
+        }
+    }
+
+    printf("[SERVER] A aguardar mensagens no FIFO %s ...\n", FIFO_PATH);
+
+    // Abre o FIFO para leitura
+    fd = open(FIFO_PATH, O_RDONLY);
+    if (fd == -1) {
+        perror("open");
+        exit(EXIT_FAILURE);
+    }
+
+    // Loop principal
+    while (1) {
+        ssize_t bytes = read(fd, buffer, sizeof(buffer) - 1);
+        if (bytes > 0) {
+            buffer[bytes] = '\0'; // Null-terminate the string
+            printf("[SERVER] Mensagem recebida: %s\n", buffer);
+        } else if (bytes == 0) {
+            printf("[SERVER] Cliente terminou a conexão.\n");
+            close(fd);
+            fd = open(FIFO_PATH, O_RDONLY); // Reopen FIFO for new clients
+        } else {
+            perror("read");
+            break;
+        }
+    }
+
+    close(fd);
+    unlink(FIFO_PATH); // Remove o FIFO ao sair
+    return 0;
+}
+```
+
+### Código do Cliente
+
+O cliente lê uma mensagem do utilizador via entrada padrão e a envia para o servidor através do FIFO.
+
+```c
+#include <stdio.h>
+#include <stdlib.h>
+#include <unistd.h>
+#include <fcntl.h>
+#include <sys/stat.h>
+#include <string.h>
+
+#define FIFO_PATH "/tmp/exec_fifo"
+
+int main(void) {
+    int fd;
+    char message[256];
+
+    printf("[CLIENT] Introduz uma mensagem: ");
+    fgets(message, sizeof(message), stdin);
+    message[strcspn(message, "\n")] = 0; // Remove newline character
+
+    // Abre o FIFO para escrita
+    fd = open(FIFO_PATH, O_WRONLY);
+    if (fd == -1) {
+        perror("open");
+        exit(EXIT_FAILURE);
+    }
+
+    // Escreve a mensagem no FIFO
+    write(fd, message, strlen(message) + 1);
+    printf("[CLIENT] Mensagem enviada: %s\n", message);
+
+    close(fd);
+    return 0;
+}
+```
+
+## Uso
+
+Para executar o projeto:
+
+1. Compile os executáveis:
+
+   ```bash
+   make
+   ```
+
+2. Em um terminal, inicie o servidor:
+
+   ```bash
+   ./build/server
+   ```
+
+3. Em outro terminal, execute o cliente:
+   ```bash
+   ./build/client
+   ```
+   Introduza uma mensagem quando solicitado.
+
+O servidor receberá e mostrará a mensagem enviada pelo cliente.
