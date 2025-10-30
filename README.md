@@ -1,17 +1,17 @@
 # me-so-pipes
 
-## Descrição
+## 📝 Descrição
 
-Projeto de desenvolvimento para o trabalho de Sistemas Operacionais, focado no uso de pipes para comunicação entre processos.
+Projeto de desenvolvimento para o trabalho de Sistemas Operativos, focado no uso de pipes para comunicação entre processos.
 
-## Pré-requisitos
+## ⚙️ Pré-requisitos
 
-- Multipass (para MacOS)
-- Ubuntu 24.04 LTS
+- 🖥️ Multipass (para macOS)
+- 🐧 Ubuntu 24.04 LTS
 
-## Instalação e Configuração
+## 🚀 Instalação e Configuração
 
-### 1. Criar a Máquina Virtual
+### 1️⃣ Criar a Máquina Virtual
 
 Crie uma máquina virtual com Ubuntu 24.04 LTS usando o Multipass:
 
@@ -19,25 +19,25 @@ Crie uma máquina virtual com Ubuntu 24.04 LTS usando o Multipass:
 multipass launch 24.04 --name so-projeto --cpus 2 --mem 2G --disk 10G
 ```
 
-### 2. Instalar Ferramentas Necessárias
+### 2️⃣ Instalar Ferramentas Necessárias
 
-Acesse a VM e instale as ferramentas:
+Aceda à VM e instale as ferramentas:
 
 ```bash
 sudo apt update && sudo apt upgrade -y
 sudo apt install -y build-essential make gcc gdb valgrind git vim
 ```
 
-Ferramentas instaladas:
+| Ferramenta | Função                  |
+|------------|-------------------------|
+| gcc       | Compilador C           |
+| make      | Sistema de compilação  |
+| gdb       | Depurador              |
+| valgrind  | Detetor de fugas de memória |
+| git       | Controlo de versões    |
+| vim       | Editor de texto        |
 
-- `gcc`: Compilador C
-- `make`: Sistema de build
-- `gdb`: Debugger
-- `valgrind`: Detector de fugas de memória
-- `git`: Controlo de versões
-- `vim`: Editor de texto
-
-### 3. Clonar o Projeto
+### 3️⃣ Clonar o Projeto
 
 Clone o repositório na VM:
 
@@ -45,9 +45,9 @@ Clone o repositório na VM:
 git clone https://github.com/lucasmaciel03/me-so-pipes.git
 ```
 
-### 4. Criar Estrutura de Pastas
+### 4️⃣ Criar Estrutura de Pastas
 
-Navegue para o diretório do projeto e crie a estrutura:
+Navegue até ao diretório do projeto e crie a estrutura:
 
 ```bash
 cd ~/me-so-pipes
@@ -70,9 +70,9 @@ Estrutura final:
 └── tests/
 ```
 
-## Compilação
+## 🧱 Compilação
 
-### Configurar o Makefile
+### 🛠️ Makefile Base
 
 O Makefile base está configurado da seguinte forma:
 
@@ -92,23 +92,16 @@ clean:
     rm -rf build/* logs/* /tmp/exec_fifo /tmp/log_fifo_*
 ```
 
-Para compilar o projeto:
+| Ação                  | Comando          |
+|-----------------------|------------------|
+| Compilar o projeto   | `make`          |
+| Limpar ficheiros gerados | `make clean`   |
 
-```bash
-make
-```
+## 💻 Código
 
-Para limpar os arquivos gerados:
+### 🧩 Servidor (Versão Mensagens)
 
-```bash
-make clean
-```
-
-## Código
-
-### Código do Servidor (Envio de Mensagens)
-
-O servidor cria um FIFO nomeado (`/tmp/exec_fifo`) e aguarda mensagens dos clientes. Ele lê as mensagens e as imprime no console. (Versão inicial para mensagens)
+O servidor cria um FIFO nomeado (`/tmp/exec_fifo`) e aguarda mensagens dos clientes. Lê as mensagens e imprime-as no terminal.
 
 ```c
 #include <stdio.h>
@@ -164,9 +157,9 @@ int main(void) {
 }
 ```
 
-### Código do Cliente
+### 💬 Cliente
 
-O cliente lê uma mensagem do utilizador via entrada padrão e a envia para o servidor através do FIFO.
+O cliente lê uma mensagem do utilizador e envia-a para o servidor através do FIFO.
 
 ```c
 #include <stdio.h>
@@ -202,9 +195,9 @@ int main(void) {
 }
 ```
 
-### Código do Servidor (Versão Comandos)
+### ⚙️ Servidor (Versão Comandos)
 
-Esta versão do servidor não apenas recebe os comandos, mas também os executa em um processo filho, reportando o resultado.
+Esta versão do servidor recebe comandos e executa-os num processo filho, registando o resultado.
 
 ```c
 #include <stdio.h>
@@ -303,25 +296,26 @@ int main(void) {
 }
 ```
 
-## Uso
+## ▶️ Utilização
 
-O projeto inclui duas versões do servidor: uma que apenas imprime as mensagens recebidas e outra que executa os comandos.
+O projeto inclui duas versões do servidor:
 
-### Versão Mensagens (Servidor Inicial):
+- Uma que apenas imprime as mensagens recebidas.
+- Outra que executa comandos.
 
-1. Compile os executáveis:
+### 🔹 Versão de Mensagens (Servidor Inicial)
 
+1. Compilar os executáveis:
    ```bash
    make
    ```
 
-2. Em um terminal, inicie o servidor:
-
+2. Iniciar o servidor (num terminal):
    ```bash
    ./build/server
    ```
 
-3. Em outro terminal, execute o cliente:
+3. Executar o cliente (noutro terminal):
    ```bash
    ./build/client
    ```
@@ -329,27 +323,31 @@ O projeto inclui duas versões do servidor: uma que apenas imprime as mensagens 
 
 O servidor receberá e mostrará a mensagem enviada pelo cliente.
 
-### Versão Comandos (Servidor Atualizado):
+### 🔹 Versão de Comandos (Servidor Atualizado)
 
 1. Compile os executáveis (mesmo processo).
 
-2. Inicie o servidor (se não estiver rodando).
+2. Inicie o servidor (se ainda não estiver a correr).
 
 3. Execute o cliente com um comando:
    ```bash
    ./build/client "ls -l"
    ```
 
-O servidor receberá, executará o comando e mostrará a saída e o código de saída.
+O servidor receberá o comando, executá-lo-á e mostrará a saída e o respetivo código de término.
 
-## Logs
+## 🪵 Registos (Logs)
 
-O servidor regista os comandos executados e os respetivos códigos de saída num ficheiro de log localizado em `logs/server.log`. Cada entrada inclui o comando completo e o resultado da execução.
+O servidor regista os comandos executados e os respetivos códigos de saída num ficheiro de log localizado em:
 
-Para visualizar os logs:
+`logs/server.log`
+
+Cada entrada inclui o comando completo e o resultado da execução.
+
+Para visualizar os registos:
 
 ```bash
 cat logs/server.log
 ```
 
-Os logs são anexados ao ficheiro, permitindo acompanhar o histórico de execuções.
+Os registos são anexados ao ficheiro, permitindo acompanhar o histórico completo de execuções.
