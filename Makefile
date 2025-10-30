@@ -1,5 +1,5 @@
 CC = gcc
-CFLAGS = -Wall -Wextra -02
+CFLAGS = -Wall -Wextra -O2
 
 all: build/server build/client
 
@@ -12,5 +12,5 @@ build/client: src/client.c
 	$(CC) $(CFLAGS) -o $@ $^
 
 clean:
-	rm -rf build/* logs/* /temp/exec_fifo /tmp/log_fifo_*
+	rm -rf build/* logs/* /tmp/exec_fifo /tmp/log_fifo_*
 	
