@@ -106,9 +106,9 @@ make clean
 
 ## Código
 
-### Código do Servidor
+### Código do Servidor (Envio de Mensagens)
 
-O servidor cria um FIFO nomeado (`/tmp/exec_fifo`) e aguarda mensagens dos clientes. Ele lê as mensagens e as imprime no console.
+O servidor cria um FIFO nomeado (`/tmp/exec_fifo`) e aguarda mensagens dos clientes. Ele lê as mensagens e as imprime no console. (Versão inicial para mensagens)
 
 ```c
 #include <stdio.h>
@@ -202,9 +202,112 @@ int main(void) {
 }
 ```
 
+### Código do Servidor (Versão Comandos)
+
+Esta versão do servidor não apenas recebe os comandos, mas também os executa em um processo filho, reportando o resultado.
+
+```c
+#include <stdio.h>
+#include <stdlib.h>
+#include <unistd.h>
+#include <fcntl.h>
+#include <sys/stat.h>
+#include <string.h>
+#include <errno.h>
+
+#define FIFO_PATH "/tmp/exec_fifo"
+
+int main(void) {
+    int fd;
+    char buffer[256];
+
+    // Cria o FIFO se não existir
+    if (mkfifo(FIFO_PATH, 0666) == -1) {
+        if (errno != EEXIST) {
+            perror("mkfifo");
+            exit(EXIT_FAILURE);
+        }
+    }
+
+    printf("[SERVER] A aguardar comandos no FIFO %s ...\n", FIFO_PATH);
+
+    // Abre o FIFO para leitura
+    fd = open(FIFO_PATH, O_RDONLY);
+    if (fd == -1) {
+        perror("open");
+        exit(EXIT_FAILURE);
+    }
+
+    // Loop principal
+    while (1) {
+        ssize_t bytes = read(fd, buffer, sizeof(buffer) - 1);
+        if (bytes > 0) {
+            buffer[bytes] = '\0'; // Null-terminate the string
+
+            printf("[SERVER] Comando recebido: %s\n", buffer);
+
+            // Break a string em token (programa + argumentos
+            char *args[32];
+            int i = 0;
+            char *token = strtok(buffer, " ");
+            while (token != NULL && i < 31) {
+                args[i++] = token;
+                token = strtok(NULL, " ");
+            }
+            args[i] = NULL; // Null-terminate the args array
+
+            if (args[0] == NULL) {
+                printf("[SERVER] Nenhum comando válido recebido.\n");
+                continue;
+            }
+
+            // Cria um processo filho para executar o comando
+            pid_t pid = fork();
+            if (pid == -1) {
+                perror("fork");
+                continue;
+            }
+
+            if (pid == 0) {
+                // Processo filho: executa o comando
+                printf("[SERVER] A executar '%s'...\n", args[0]);
+                execvp(args[0], args);
+                perror("[SERVER] Erro no execvp");
+                exit(EXIT_FAILURE);
+            } else {
+                // Processo pai: espera o filho terminar
+                int status;
+                waitpid(pid, &status, 0);
+
+                if(WIFEXITED(status)) {
+                    int exit_code = WEXITSTATUS(status);
+                    printf("[SERVER] Comando '%s' terminou com código %d\n", args[0], exit_code);
+                } else {
+                    printf("[SERVER] Comando '%s' terminou de forma anormal\n", args[0]);
+                }
+            }
+
+        } else if (bytes == 0) {
+            printf("[SERVER] Cliente terminou a conexão. A reabrir FIFO... \n");
+            close(fd);
+            fd = open(FIFO_PATH, O_RDONLY); // Reopen FIFO for new clients
+        } else {
+            perror("read");
+            break;
+        }
+    }
+
+    close(fd);
+    unlink(FIFO_PATH); // Remove o FIFO ao sair
+    return 0;
+}
+```
+
 ## Uso
 
-Para executar o projeto:
+O projeto inclui duas versões do servidor: uma que apenas imprime as mensagens recebidas e outra que executa os comandos.
+
+### Versão Mensagens (Servidor Inicial):
 
 1. Compile os executáveis:
 
@@ -225,3 +328,16 @@ Para executar o projeto:
    Introduza uma mensagem quando solicitado.
 
 O servidor receberá e mostrará a mensagem enviada pelo cliente.
+
+### Versão Comandos (Servidor Atualizado):
+
+1. Compile os executáveis (mesmo processo).
+
+2. Inicie o servidor (se não estiver rodando).
+
+3. Execute o cliente com um comando:
+   ```bash
+   ./build/client "ls -l"
+   ```
+
+O servidor receberá, executará o comando e mostrará a saída e o código de saída.

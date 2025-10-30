@@ -6,6 +6,7 @@
 #include <string.h>
 
 #define FIFO_PATH "/tmp/exec_fifo"
+
 int main(void) {
     int fd;
     char message[256];
@@ -20,8 +21,8 @@ int main(void) {
     // Abre o FIFO para escrita
     fd = open(FIFO_PATH, O_WRONLY);
     if (fd == -1) {
-      perror("open");
-      exit(EXIT_FAILURE);
+        perror("open");
+        exit(EXIT_FAILURE);
     }
 
     // Escreve a mensagem no FIFO
