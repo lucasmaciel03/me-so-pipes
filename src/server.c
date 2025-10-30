@@ -31,7 +31,7 @@ int main(void) {
     char buffer[256];
 
     // Garante que a pasta de logs existe
-    mkdir("logs", 0755);
+    mkdir("logs", 0777);
 
     // Cria o FIFO se não existir
     if (mkfifo(FIFO_PATH, 0666) == -1) {
